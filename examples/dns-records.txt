@@ -1,0 +1,9 @@
+; Illustrative UCAN records only. Not a finalized syntax.
+
+_ucan.qwerty.onion.com. 3600 IN TXT "v=ucan1; namespace=onion.qwerty; operator=ns1.example.net; key=EXAMPLE_KEY; issued=2026-07-10T00:00:00Z; expires=2026-08-10T00:00:00Z; sig=EXAMPLE_SIGNATURE"
+
+; Optional operator identity discovery
+_ucan-operator.ns1.example.net. 3600 IN TXT "v=ucan1; key=EXAMPLE_OPERATOR_KEY; capabilities=authoritative,resolution"
+
+; Conventional DNS record for the operator host
+ns1.example.net. 3600 IN A 192.0.2.53

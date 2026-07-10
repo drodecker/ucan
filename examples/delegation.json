@@ -1,0 +1,12 @@
+{
+  "version": "ucan1",
+  "origin": "onion.com",
+  "namespace": "onion.qwerty",
+  "operator": "ns1.example.net",
+  "operator_key": "BASE64URL_PUBLIC_KEY",
+  "issued": "2026-07-10T00:00:00Z",
+  "expires": "2026-08-10T00:00:00Z",
+  "sequence": 1,
+  "nonce": "EXAMPLE_NONCE",
+  "signature": "BASE64URL_SIGNATURE"
+}
