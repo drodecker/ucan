@@ -4,7 +4,7 @@
 
 UCAN is an open protocol proposal for decentralized namespace delegation.
 
-Rather than replacing DNS, UCAN explores how authority over new namespaces can be cryptographically delegated from existing DNS ownership while preserving compatibility with today's Internet infrastructure.
+Rather than replacing DNS, UCAN explores how authority over new namespaces can be cryptographically delegated from existing DNS ownership, IP-block control, or other verifiable resources while preserving compatibility with today's Internet infrastructure.
 
 ## Why UCAN?
 
@@ -18,6 +18,8 @@ UCAN is an early-stage proposal intended for discussion, experimentation, and co
 
 Nothing in this repository should be treated as a finalized standard.
 
+A concrete reference architecture—**DannyClaw**—is described in the specification. DannyClaw is an OpenClaw-managed DNS proxy application that serves ordinary domains via Cloudflare and handles non-IANA TLDs through a local claims database, with authority rooted in reverse DNS and IP-block ownership.
+
 ## Start here
 
 - [Manifesto](docs/manifesto.md)
@@ -27,7 +29,7 @@ Nothing in this repository should be treated as a finalized standard.
 - [Threat model](docs/threat-model.md)
 - [Governance](docs/governance.md)
 - [Roadmap](docs/roadmap.md)
-- [Draft specification](specification/ucan-spec-v0.1.md)
+- [Draft specification](specification/ucan-spec-v0.1.md) (includes DannyClaw reference)
 - [Open questions](docs/open-questions.md)
 
 ## Guiding principles
