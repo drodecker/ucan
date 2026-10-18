@@ -10,8 +10,8 @@ It does not define an interoperable production standard.
 
 UCAN defines a framework for:
 
-- asserting authority from an existing namespace;
-- delegating authority to a virtual namespace;
+- asserting authority from an existing namespace or network resource;
+- delegating authority to a virtual or non-IANA namespace;
 - identifying namespace operators;
 - validating signed operator responses;
 - revoking or replacing delegations;
@@ -22,8 +22,8 @@ UCAN defines a framework for:
 This version does not:
 
 - alter the ICANN root;
-- require a blockchain;
-- define a cryptocurrency;
+- require a blockchain (though optional control-plane uses are described);
+- define a mandatory cryptocurrency;
 - create a universal operator trust list;
 - guarantee browser or resolver adoption;
 - define trademark policy;
@@ -33,25 +33,25 @@ This version does not:
 
 ### 3.1 Origin authority
 
-Controls the origin domain and publishes an authorization record.
+Controls the origin domain, IP block, or other verifiable resource and publishes an authorization record.
 
 ### 3.2 Namespace operator
 
-Serves the virtual namespace and signs authoritative responses.
+Serves the virtual namespace and signs authoritative responses. In the DannyClaw reference architecture, this role is filled by an OpenClaw-managed application.
 
 ### 3.3 UCAN-aware resolver
 
-Discovers and validates authorization records, evaluates operators, and returns results according to local policy.
+Discovers and validates authorization records, evaluates operators, and returns results according to local policy. May fall back to conventional DNS or a local database of non-IANA TLDs.
 
 ### 3.4 Trust provider
 
-Optionally publishes evidence about operators, such as audits, endorsements, revocations, or reputation.
+Optionally publishes evidence about operators, such as audits, endorsements, revocations, reputation, or stake.
 
 ## 4. Authorization record
 
-A provisional authorization record may be published beneath the origin domain.
+A provisional authorization record may be published beneath the origin domain or in reverse DNS (ARPA).
 
-Example:
+Example (origin domain):
 
 ```dns
 _ucan.qwerty.onion.com. 3600 IN TXT (
@@ -66,23 +66,32 @@ _ucan.qwerty.onion.com. 3600 IN TXT (
 )
 ```
 
+Example (IP-based via reverse DNS, as used in DannyClaw):
+
+```dns
+1.2.3.4.in-addr.arpa. IN TXT (
+  "v=ucan1;"
+  "claim=ip-block;"
+  "wallet=WALLET_ADDRESS;"
+  "stake=COIN_IDENTIFIER;"
+  "operator=danny.claw;"
+  "sig=..."
+)
+```
+
 This syntax is illustrative only.
 
 ## 5. Validation sequence
 
-A resolver evaluating `onion.qwerty` should conceptually:
+A resolver evaluating a non-IANA name such as `name.tld` should conceptually:
 
-1. determine the expected origin domain;
-2. query the UCAN authorization record;
-3. validate syntax and version;
-4. verify origin-domain control;
-5. verify signatures;
-6. verify issuance and expiry;
-7. discover the namespace operator;
-8. evaluate the operator under local trust policy;
-9. query the operator;
-10. verify the operator response;
-11. return the result with validation status.
+1. determine whether the TLD is in the IANA root;
+2. if not, query a local or distributed database of claimed namespaces;
+3. if a record exists, discover the designated operator (or proxy);
+4. validate authorization (origin domain, IP reverse record, stake, or other proof);
+5. query the operator or proxy;
+6. verify the response;
+7. return the result with validation status.
 
 ## 6. Operator identity
 
@@ -105,10 +114,11 @@ A resolver policy may use:
 - DNSSEC validation;
 - registry or registrar endorsement;
 - ASN ownership;
+- ARIN/RIPE reverse DNS and PTR claims;
 - operator audits;
 - key age and continuity;
 - reputation;
-- stake;
+- stake or token minting;
 - local allowlists or denylists.
 
 ## 8. Revocation
@@ -123,14 +133,67 @@ A delegation may be revoked by:
 
 Resolvers must define cache behavior so revocation can take effect within a bounded period.
 
-## 9. Security considerations
+## 9. DannyClaw reference architecture
+
+DannyClaw is a concrete OpenClaw-managed reference implementation of a UCAN-style TLD system.
+
+### 9.1 Overview
+
+An OpenClaw agent (named Danny) generates and operates a fully functioning DNS server application. The application:
+
+- Proxies ordinary DNS queries to Cloudflare authoritative DNS when Cloudflare has an answer.
+- For TLDs not present in the IANA/ICANN root, consults a local database of claimed `name.tld` → nameserver mappings.
+- If a matching record exists, directs the query to the designated nameserver (or continues proxying).
+- Supports direct WebSocket delivery of Cloudflare responses to the client when applicable.
+
+DNS records are created by instructing the OpenClaw agent. The agent records the request as an open-source application that manages Cloudflare DNS under the operator’s account.
+
+### 9.2 Authority and claiming
+
+Authority for the system is established via:
+
+- Reverse DNS (ARPA) TXT records on the operator’s IP addresses.
+- ARIN (or equivalent) reverse PTR records that have been exchanged for a blockchain claim on the IP block.
+- A wallet address associated with the claim.
+- A single-coin stake sufficient to claim the namespace or operator role.
+- The Danny agent mints a token representing the claim.
+
+This provides a verifiable link between network-layer ownership (IP block) and the right to operate non-IANA namespaces.
+
+### 9.3 Database
+
+A simple database stores:
+
+- Claimed `name.tld` entries
+- Associated nameserver addresses
+- Authorization metadata (wallet, stake, timestamp, signature)
+
+### 9.4 Relationship to the protocol
+
+DannyClaw demonstrates one path for incremental deployment:
+
+- Compatible with existing Cloudflare DNS for ordinary domains.
+- Adds a side database and proxy logic for experimental TLDs.
+- Uses existing reverse-DNS and IP ownership signals as the root of authority rather than a new global root.
+- Keeps the operator under user control via OpenClaw.
+
+It is not required for UCAN compliance. Other implementations may use different authorization anchors, storage, or proxy mechanisms.
+
+## 10. Security considerations
 
 See [Threat Model](../docs/threat-model.md).
 
-## 10. IANA considerations
+Additional considerations for the DannyClaw path include:
+
+- Security of the OpenClaw agent and its Cloudflare credentials.
+- Integrity of the local namespace database.
+- Validation of reverse-DNS and blockchain claims.
+- Prevention of unauthorized proxying or record injection.
+
+## 11. IANA considerations
 
 This draft makes no request of IANA.
 
-## 11. Open issues
+## 12. Open issues
 
-The record format, namespace derivation rules, operator protocol, signature format, and discovery method remain unresolved.
+The record format, namespace derivation rules, operator protocol, signature format, discovery method, and precise staking semantics remain unresolved.
